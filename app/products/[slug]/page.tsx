@@ -7,6 +7,7 @@ import { formatPrice } from '@/lib/format'
 import InventoryBadge from '@/components/InventoryBadge'
 import ReviewCard from '@/components/ReviewCard'
 import StarRating from '@/components/StarRating'
+import { RichText } from '@cosmicjs/rich-text'
 import type { ProductVariant } from '@/types'
 
 export default async function ProductDetailPage({
@@ -138,7 +139,7 @@ export default async function ProductDetailPage({
 
           {description && (
             <div className="mt-6 prose prose-sm text-gray-700 max-w-none">
-              <p className="leading-relaxed whitespace-pre-line">{description}</p>
+              <RichText content={description} />
             </div>
           )}
 
