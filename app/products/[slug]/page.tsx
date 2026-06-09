@@ -1,14 +1,49 @@
 // app/products/[slug]/page.tsx
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getProduct, getReviewsByProduct, getBlocks } from '@/lib/cosmic'
-import { getMetafieldValue } from '@/lib/cosmic'
+import { getProduct, getReviewsByProduct, getBlocks, getMetafieldValue } from '@/lib/cosmic'
 import { formatPrice } from '@/lib/format'
 import InventoryBadge from '@/components/InventoryBadge'
 import ReviewCard from '@/components/ReviewCard'
 import StarRating from '@/components/StarRating'
 import { RichText } from '@cosmicjs/rich-text'
+import type { ObjectBlockProps } from '@cosmicjs/rich-text'
 import type { ProductVariant } from '@/types'
+
+// Inline embed component for products referenced via {{ object type="products" id="..." /}}
+function EmbeddedProductCard({ object }: ObjectBlockProps) {
+  if (!object) return null
+  const name = getMetafieldValue(object.metadata?.name) || object.title
+  const price = object.metadata?.price
+  const image = object.metadata?.product_image
+  return (
+    <Link
+      href={`/products/${object.slug}`}
+      className="not-prose flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow my-4"
+    >
+      {image ? (
+        <img
+          src={`${image.imgix_url}?w=160&h=160&fit=crop&auto=format,compress`}
+          alt={name}
+          width={80}
+          height={80}
+          className="rounded-lg object-cover w-20 h-20 shrink-0"
+        />
+      ) : (
+        <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center text-3xl shrink-0">
+          🛍️
+        </div>
+      )}
+      <div className="min-w-0">
+        <p className="font-semibold text-gray-900 truncate">{name}</p>
+        {typeof price === 'number' && (
+          <p className="text-sm text-brand-600 font-medium mt-1">{formatPrice(price)}</p>
+        )}
+        <p className="text-xs text-gray-400 mt-1">View product →</p>
+      </div>
+    </Link>
+  )
+}
 
 export default async function ProductDetailPage({
   params,
@@ -38,6 +73,10 @@ export default async function ProductDetailPage({
   const gallery = product.metadata?.gallery
   const variants = product.metadata?.variants
   const category = product.metadata?.category
+
+  // Build an id→object map from the related_products field for resolveObject
+  const relatedProducts: any[] = product.metadata?.related_products ?? []
+  const relatedById = new Map(relatedProducts.map((p: any) => [p.id, p]))
 
   const avgRating =
     reviews.length > 0
@@ -142,7 +181,12 @@ export default async function ProductDetailPage({
 
           {description && (
             <div className="mt-6 prose prose-sm text-gray-700 max-w-none">
-              <RichText value={description} blocks={blocks} />
+              <RichText
+                value={description}
+                blocks={blocks}
+                objects={{ products: EmbeddedProductCard }}
+                resolveObject={({ id }) => relatedById.get(id)}
+              />
             </div>
           )}
 

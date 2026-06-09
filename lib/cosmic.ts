@@ -56,11 +56,13 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 // Fetch a single product by slug
+// depth(2) is required so that related_products objects are fully resolved
+// for use with RichText inline object embeds
 export async function getProduct(slug: string): Promise<Product | null> {
   try {
     const response = await cosmic.objects
       .findOne({ type: 'products', slug })
-      .depth(1)
+      .depth(2)
     return response.object as Product
   } catch (error) {
     if (hasStatus(error) && error.status === 404) {
