@@ -8,20 +8,20 @@ import ReviewCard from '@/components/ReviewCard'
 import StarRating from '@/components/StarRating'
 import { RichText } from '@cosmicjs/rich-text'
 import type { ObjectBlockProps } from '@cosmicjs/rich-text'
-import type { ProductVariant } from '@/types'
+import type { ProductVariant, CosmicImage } from '@/types'
 
 // Inline embed component for products referenced via {{ object type="products" id="..." /}}
 function EmbeddedProductCard({ object }: ObjectBlockProps) {
   if (!object) return null
   const name = getMetafieldValue(object.metadata?.name) || object.title
   const price = object.metadata?.price
-  const image = object.metadata?.product_image
+  const image = object.metadata?.product_image as CosmicImage | undefined
   return (
     <Link
       href={`/products/${object.slug}`}
       className="not-prose flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow my-4"
     >
-      {image ? (
+      {image?.imgix_url ? (
         <img
           src={`${image.imgix_url}?w=160&h=160&fit=crop&auto=format,compress`}
           alt={name}
@@ -75,8 +75,8 @@ export default async function ProductDetailPage({
   const category = product.metadata?.category
 
   // Build an id→object map from the related_products field for resolveObject
-  const relatedProducts: any[] = product.metadata?.related_products ?? []
-  const relatedById = new Map(relatedProducts.map((p: any) => [p.id, p]))
+  const relatedProducts: Product[] = product.metadata?.related_products ?? []
+  const relatedById = new Map(relatedProducts.map((p) => [p.id, p]))
 
   const avgRating =
     reviews.length > 0
