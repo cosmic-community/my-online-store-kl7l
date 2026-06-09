@@ -7,7 +7,7 @@ import InventoryBadge from '@/components/InventoryBadge'
 import ReviewCard from '@/components/ReviewCard'
 import StarRating from '@/components/StarRating'
 import { RichText } from '@cosmicjs/rich-text'
-import type { ObjectBlockProps } from '@cosmicjs/rich-text'
+import type { ObjectBlockProps, ResolvedObject } from '@cosmicjs/rich-text'
 import type { ProductVariant, CosmicImage, Product } from '@/types'
 
 // Inline embed component for products referenced via {{ object type="products" id="..." /}}
@@ -185,7 +185,7 @@ export default async function ProductDetailPage({
                 value={description}
                 blocks={blocks}
                 objects={{ products: EmbeddedProductCard }}
-                resolveObject={({ id }) => relatedById.get(id)}
+                resolveObject={({ id }) => relatedById.get(id) as ResolvedObject | undefined}
               />
             </div>
           )}
