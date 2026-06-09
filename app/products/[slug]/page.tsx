@@ -1,7 +1,7 @@
 // app/products/[slug]/page.tsx
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getProduct, getReviewsByProduct } from '@/lib/cosmic'
+import { getProduct, getReviewsByProduct, getBlocks } from '@/lib/cosmic'
 import { getMetafieldValue } from '@/lib/cosmic'
 import { formatPrice } from '@/lib/format'
 import InventoryBadge from '@/components/InventoryBadge'
@@ -16,7 +16,10 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const product = await getProduct(slug)
+  const [product, blocks] = await Promise.all([
+    getProduct(slug),
+    getBlocks(),
+  ])
 
   if (!product) {
     notFound()
@@ -139,7 +142,7 @@ export default async function ProductDetailPage({
 
           {description && (
             <div className="mt-6 prose prose-sm text-gray-700 max-w-none">
-              <RichText value={description} />
+              <RichText value={description} blocks={blocks} />
             </div>
           )}
 

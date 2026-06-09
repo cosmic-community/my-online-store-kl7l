@@ -26,6 +26,19 @@ export function getMetafieldValue(field: unknown): string {
   return ''
 }
 
+// Fetch bucket block definitions for RichText rendering
+export async function getBlocks() {
+  try {
+    const response = await cosmic.blocks.find()
+    return response.blocks ?? []
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return []
+    }
+    throw new Error('Failed to fetch blocks')
+  }
+}
+
 // Fetch all products
 export async function getProducts(): Promise<Product[]> {
   try {
