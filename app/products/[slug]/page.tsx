@@ -8,7 +8,7 @@ import ReviewCard from '@/components/ReviewCard'
 import StarRating from '@/components/StarRating'
 import { RichText } from '@cosmicjs/rich-text'
 import type { ObjectBlockProps } from '@cosmicjs/rich-text'
-import type { ProductVariant, CosmicImage } from '@/types'
+import type { ProductVariant, CosmicImage, Product } from '@/types'
 
 // Inline embed component for products referenced via {{ object type="products" id="..." /}}
 function EmbeddedProductCard({ object }: ObjectBlockProps) {
