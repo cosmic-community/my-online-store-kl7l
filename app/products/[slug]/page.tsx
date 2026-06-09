@@ -1,19 +1,26 @@
 // app/products/[slug]/page.tsx
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getProduct, getReviewsByProduct, getBlocks, getMetafieldValue } from '@/lib/cosmic'
+import {
+  getProduct,
+  getReviewsByProduct,
+  getBlocks,
+  getMetafieldValue,
+  extractEmbedIds,
+  getObjectsById,
+} from '@/lib/cosmic'
 import { formatPrice } from '@/lib/format'
 import InventoryBadge from '@/components/InventoryBadge'
 import ReviewCard from '@/components/ReviewCard'
 import StarRating from '@/components/StarRating'
 import { RichText } from '@cosmicjs/rich-text'
 import type { ObjectBlockProps, ResolvedObject } from '@cosmicjs/rich-text'
-import type { ProductVariant, CosmicImage, Product } from '@/types'
+import type { ProductVariant, CosmicImage } from '@/types'
 
 // Inline embed component for products referenced via {{ object type="products" id="..." /}}
 function EmbeddedProductCard({ object }: ObjectBlockProps) {
   if (!object) return null
-  const name = getMetafieldValue(object.metadata?.name) || object.title
+  const name = getMetafieldValue(object.metadata?.name) || (object.title as string)
   const price = object.metadata?.price
   const image = object.metadata?.product_image as CosmicImage | undefined
   return (
@@ -74,9 +81,11 @@ export default async function ProductDetailPage({
   const variants = product.metadata?.variants
   const category = product.metadata?.category
 
-  // Build an id→object map from the related_products field for resolveObject
-  const relatedProducts: Product[] = product.metadata?.related_products ?? []
-  const relatedById = new Map(relatedProducts.map((p) => [p.id, p]))
+  // Auto-resolve any {{ object ... id="ID" /}} tokens embedded in the description.
+  // We parse the IDs directly from the markdown string and fetch them in one request,
+  // so editors never need to manually populate a "related_products" field.
+  const embedIds = extractEmbedIds(description)
+  const embedMap = await getObjectsById(embedIds)
 
   const avgRating =
     reviews.length > 0
@@ -185,7 +194,7 @@ export default async function ProductDetailPage({
                 value={description}
                 blocks={blocks}
                 objects={{ products: EmbeddedProductCard }}
-                resolveObject={({ id }) => relatedById.get(id) as ResolvedObject | undefined}
+                resolveObject={({ id }) => embedMap.get(id) as ResolvedObject | undefined}
               />
             </div>
           )}

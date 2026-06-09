@@ -39,6 +39,44 @@ export async function getBlocks() {
   }
 }
 
+/**
+ * Extract all object IDs from {{ object ... id="ID" ... /}} tokens in a rich-text string.
+ * These are used to pre-fetch embedded objects for RichText resolveObject.
+ */
+export function extractEmbedIds(richText: string): string[] {
+  const ids: string[] = []
+  const re = /\{\{\s*object\b[^}]*\bid="([^"]+)"/g
+  let match: RegExpExecArray | null
+  while ((match = re.exec(richText)) !== null) {
+    ids.push(match[1])
+  }
+  return [...new Set(ids)]
+}
+
+/**
+ * Fetch a batch of objects by their IDs.
+ * Returns a Map of id -> object for use with RichText resolveObject.
+ */
+export async function getObjectsById(ids: string[]): Promise<Map<string, Record<string, unknown>>> {
+  if (ids.length === 0) return new Map()
+  try {
+    const response = await cosmic.objects
+      .find({ 'id[in]': ids.join(',') })
+      .props(['id', 'title', 'slug', 'type', 'metadata'])
+      .depth(1)
+    const map = new Map<string, Record<string, unknown>>()
+    for (const obj of response.objects ?? []) {
+      map.set(obj.id, obj as Record<string, unknown>)
+    }
+    return map
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return new Map()
+    }
+    throw new Error('Failed to fetch embedded objects')
+  }
+}
+
 // Fetch all products
 export async function getProducts(): Promise<Product[]> {
   try {
@@ -56,13 +94,11 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 // Fetch a single product by slug
-// depth(2) is required so that related_products objects are fully resolved
-// for use with RichText inline object embeds
 export async function getProduct(slug: string): Promise<Product | null> {
   try {
     const response = await cosmic.objects
       .findOne({ type: 'products', slug })
-      .depth(2)
+      .depth(1)
     return response.object as Product
   } catch (error) {
     if (hasStatus(error) && error.status === 404) {
