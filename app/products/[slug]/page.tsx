@@ -1,13 +1,56 @@
 // app/products/[slug]/page.tsx
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getProduct, getReviewsByProduct } from '@/lib/cosmic'
-import { getMetafieldValue } from '@/lib/cosmic'
+import {
+  getProduct,
+  getReviewsByProduct,
+  getBlocks,
+  getMetafieldValue,
+  extractEmbedIds,
+  getObjectsById,
+} from '@/lib/cosmic'
 import { formatPrice } from '@/lib/format'
 import InventoryBadge from '@/components/InventoryBadge'
 import ReviewCard from '@/components/ReviewCard'
 import StarRating from '@/components/StarRating'
-import type { ProductVariant } from '@/types'
+import { RichText } from '@cosmicjs/rich-text'
+import type { ObjectBlockProps, ResolvedObject } from '@cosmicjs/rich-text'
+import type { ProductVariant, CosmicImage } from '@/types'
+
+// Inline embed component for products referenced via {{ object type="products" id="..." /}}
+function EmbeddedProductCard({ object }: ObjectBlockProps) {
+  if (!object) return null
+  const name = getMetafieldValue(object.metadata?.name) || (object.title as string)
+  const price = object.metadata?.price
+  const image = object.metadata?.product_image as CosmicImage | undefined
+  return (
+    <Link
+      href={`/products/${object.slug}`}
+      className="not-prose flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow my-4"
+    >
+      {image?.imgix_url ? (
+        <img
+          src={`${image.imgix_url}?w=160&h=160&fit=crop&auto=format,compress`}
+          alt={name}
+          width={80}
+          height={80}
+          className="rounded-lg object-cover w-20 h-20 shrink-0"
+        />
+      ) : (
+        <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center text-3xl shrink-0">
+          🛍️
+        </div>
+      )}
+      <div className="min-w-0">
+        <p className="font-semibold text-gray-900 truncate">{name}</p>
+        {typeof price === 'number' && (
+          <p className="text-sm text-brand-600 font-medium mt-1">{formatPrice(price)}</p>
+        )}
+        <p className="text-xs text-gray-400 mt-1">View product →</p>
+      </div>
+    </Link>
+  )
+}
 
 export default async function ProductDetailPage({
   params,
@@ -15,7 +58,10 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const product = await getProduct(slug)
+  const [product, blocks] = await Promise.all([
+    getProduct(slug),
+    getBlocks(),
+  ])
 
   if (!product) {
     notFound()
@@ -34,6 +80,12 @@ export default async function ProductDetailPage({
   const gallery = product.metadata?.gallery
   const variants = product.metadata?.variants
   const category = product.metadata?.category
+
+  // Auto-resolve any {{ object ... id="ID" /}} tokens embedded in the description.
+  // We parse the IDs directly from the markdown string and fetch them in one request,
+  // so editors never need to manually populate a "related_products" field.
+  const embedIds = extractEmbedIds(description)
+  const embedMap = await getObjectsById(embedIds)
 
   const avgRating =
     reviews.length > 0
@@ -138,7 +190,12 @@ export default async function ProductDetailPage({
 
           {description && (
             <div className="mt-6 prose prose-sm text-gray-700 max-w-none">
-              <p className="leading-relaxed whitespace-pre-line">{description}</p>
+              <RichText
+                value={description}
+                blocks={blocks}
+                objects={{ products: EmbeddedProductCard }}
+                resolveObject={({ id }) => embedMap.get(id) as ResolvedObject | undefined}
+              />
             </div>
           )}
 

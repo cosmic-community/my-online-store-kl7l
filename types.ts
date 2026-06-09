@@ -52,6 +52,7 @@ export interface Product extends CosmicObject {
     gallery?: CosmicImage[];
     variants?: ProductVariant[];
     category?: Category;
+    related_products?: Product[];
   };
 }
 
