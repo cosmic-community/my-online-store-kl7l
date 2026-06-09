@@ -48,9 +48,11 @@ export function extractEmbedIds(richText: string): string[] {
   const re = /\{\{\s*object\b[^}]*\bid="([^"]+)"/g
   let match: RegExpExecArray | null
   while ((match = re.exec(richText)) !== null) {
-    ids.push(match[1])
+    if (match[1] !== undefined) {
+      ids.push(match[1])
+    }
   }
-  return [...new Set(ids)]
+  return Array.from(new Set(ids))
 }
 
 /**
