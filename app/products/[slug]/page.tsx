@@ -139,7 +139,7 @@ export default async function ProductDetailPage({
 
           {description && (
             <div className="mt-6 prose prose-sm text-gray-700 max-w-none">
-              <RichText content={description} />
+              <RichText value={description} />
             </div>
           )}
 
