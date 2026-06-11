@@ -14,7 +14,7 @@ import ReviewCard from '@/components/ReviewCard'
 import StarRating from '@/components/StarRating'
 import CTABlock from '@/components/CTABlock'
 import { RichText } from '@cosmicjs/rich-text'
-import type { ObjectBlockProps, ResolvedObject } from '@cosmicjs/rich-text'
+import type { BlockDefinition, ObjectBlockProps, ResolvedObject } from '@cosmicjs/rich-text'
 import type { ProductVariant, CosmicImage } from '@/types'
 
 // Inline embed component for products referenced via {{ object type="products" id="..." /}}
@@ -87,11 +87,10 @@ export default async function ProductDetailPage({
       ? reviews.reduce((sum, r) => sum + (Number(r.metadata?.rating) || 0), 0) / reviews.length
       : 0
 
-  // Custom block renderers — keyed by the block name used in {{name /}} tokens.
-  // No bucket block definitions needed; these are purely code-side components.
-  const blockComponents = {
-    cta: CTABlock,
-  }
+  // Custom block renderers as BlockDefinition array.
+  const blockComponents: BlockDefinition[] = [
+    { name: 'cta', component: CTABlock },
+  ]
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
