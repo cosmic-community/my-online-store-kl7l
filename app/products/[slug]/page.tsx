@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import {
   getProduct,
-  getReviewsByProduct,
   getBlocks,
+  getReviewsByProduct,
   getMetafieldValue,
   extractEmbedIds,
   getObjectsById,
@@ -82,8 +82,6 @@ export default async function ProductDetailPage({
   const category = product.metadata?.category
 
   // Auto-resolve any {{ object ... id="ID" /}} tokens embedded in the description.
-  // We parse the IDs directly from the markdown string and fetch them in one request,
-  // so editors never need to manually populate a "related_products" field.
   const embedIds = extractEmbedIds(description)
   const embedMap = await getObjectsById(embedIds)
 
