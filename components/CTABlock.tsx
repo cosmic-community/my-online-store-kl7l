@@ -3,8 +3,9 @@
 // Styled to match the store's brand-indigo palette.
 
 import Link from 'next/link'
+import type { BlockProps } from '@cosmicjs/rich-text'
 
-export default function CTABlock() {
+export default function CTABlock(_props: BlockProps) {
   return (
     <div className="not-prose my-8 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 px-8 py-10 text-center shadow-lg">
       <p className="text-xs font-semibold uppercase tracking-widest text-brand-200 mb-2">
