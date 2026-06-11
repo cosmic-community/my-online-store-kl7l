@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import {
   getProduct,
+  getBlocks,
   getReviewsByProduct,
   getMetafieldValue,
   extractEmbedIds,
@@ -12,7 +13,6 @@ import { formatPrice } from '@/lib/format'
 import InventoryBadge from '@/components/InventoryBadge'
 import ReviewCard from '@/components/ReviewCard'
 import StarRating from '@/components/StarRating'
-import CTABlock from '@/components/CTABlock'
 import { RichText } from '@cosmicjs/rich-text'
 import type { ObjectBlockProps, ResolvedObject } from '@cosmicjs/rich-text'
 import type { ProductVariant, CosmicImage } from '@/types'
@@ -58,7 +58,10 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const product = await getProduct(slug)
+  const [product, blocks] = await Promise.all([
+    getProduct(slug),
+    getBlocks(),
+  ])
 
   if (!product) {
     notFound()
@@ -187,7 +190,7 @@ export default async function ProductDetailPage({
             <div className="mt-6 prose prose-sm text-gray-700 max-w-none">
               <RichText
                 value={description}
-                components={{ cta: CTABlock }}
+                blocks={blocks}
                 objects={{ products: EmbeddedProductCard }}
                 resolveObject={({ id }) => embedMap.get(id) as ResolvedObject | undefined}
               />

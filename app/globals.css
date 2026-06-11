@@ -2,11 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  scroll-behavior: smooth;
+@layer base {
+  :root {
+    --brand-50: #eef2ff;
+    --brand-100: #e0e7ff;
+    --brand-200: #c7d2fe;
+    --brand-300: #a5b4fc;
+    --brand-400: #818cf8;
+    --brand-500: #6366f1;
+    --brand-600: #4f46e5;
+    --brand-700: #4338ca;
+    --brand-800: #3730a3;
+    --brand-900: #312e81;
+  }
 }
 
-body {
-  background-color: #f9fafb;
-  color: #111827;
+/* ─── Cosmic CTA Block ──────────────────────────────────────────────────────── */
+
+.cosmic-block-cta {
+  margin: 2rem 0;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.4);
+  /* escape Tailwind Typography prose styles */
+  font-size: initial;
+  color: white;
+}
+
+.cosmic-block-cta::before {
+  content: 'Limited time offer';
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #c7d2fe;
+  margin-bottom: 0.5rem;
+}
+
+.cosmic-block-cta h2,
+.cosmic-block-cta h3 {
+  color: white !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  margin: 0 0 0.75rem !important;
+}
+
+.cosmic-block-cta p {
+  color: #e0e7ff !important;
+  font-size: 0.875rem !important;
+  max-width: 28rem;
+  margin: 0 auto 1.5rem !important;
+}
+
+.cosmic-block-cta a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.25rem;
+  padding: 0.6rem 1.4rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: all 0.15s ease;
+}
+
+/* Primary CTA button */
+.cosmic-block-cta a:first-of-type {
+  background: white;
+  color: #4338ca !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.cosmic-block-cta a:first-of-type:hover {
+  background: #eef2ff;
+}
+
+/* Secondary CTA button */
+.cosmic-block-cta a:not(:first-of-type) {
+  background: transparent;
+  color: white !important;
+  border: 1.5px solid rgba(165, 180, 252, 0.6);
+}
+.cosmic-block-cta a:not(:first-of-type):hover {
+  background: rgba(255,255,255,0.1);
 }
